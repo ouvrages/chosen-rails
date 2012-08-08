@@ -17,7 +17,7 @@
     -moz-box-shadow: 0 4px 5px rgba(0, 0, 0, 0.15)
     -o-box-shadow: 0 4px 5px rgba(0, 0, 0, 0.15)
     box-shadow: 0 4px 5px rgba(0, 0, 0, 0.15)
-    z-index: 1010
+    z-index: 999
 
 /* @end
 
@@ -63,6 +63,21 @@
       -o-text-overflow: ellipsis
       -ms-text-overflow: ellipsis
       text-overflow: ellipsis
+      b
+        margin-right: 4px
+        overflow: hidden
+        white-space: nowrap
+        -o-text-overflow: ellipsis
+        -ms-text-overflow: ellipsis
+        text-overflow: ellipsis
+        font-weight: normal
+        color: #999999
+        &:after
+          color: #C2BCBC
+          content: "\25B6"
+          font-size: 80%
+          padding-left: 4px
+          vertical-align: top
     abbr
       display: block
       position: absolute
@@ -74,20 +89,18 @@
       background: image-url('chosen-sprite.png') right top no-repeat
       &:hover
         background-position: right -11px
-  &.chzn-disabled abbr:hover
-    background-position: right top
-  .chzn-single div
-    position: absolute
-    right: 0
-    top: 0
-    display: block
-    height: 100%
-    width: 18px
-    b
-      background: image-url('chosen-sprite.png') no-repeat 0 0
+    div
+      position: absolute
+      right: 0
+      top: 0
       display: block
-      width: 100%
       height: 100%
+      width: 18px
+      b
+        background: image-url('chosen-sprite.png') no-repeat 0 0
+        display: block
+        width: 100%
+        height: 100%
   .chzn-search
     padding: 3px 4px
     position: relative
@@ -188,6 +201,16 @@
     margin: 3px 0 3px 5px
     position: relative
     cursor: default
+    span b
+      margin-right: 4px
+      overflow: hidden
+      white-space: nowrap
+      font-weight: normal
+      color: #999999
+      &:after
+        content: ":"
+        padding-left: 2px
+        vertical-align: top
   .search-choice-focus
     background: #d4d4d4
   .search-choice .search-choice-close
@@ -215,7 +238,6 @@
   position: relative
   overflow-x: hidden
   overflow-y: auto
-  -webkit-overflow-scrolling: touch
 
 .chzn-container-multi .chzn-results
   margin: -1px 0 0

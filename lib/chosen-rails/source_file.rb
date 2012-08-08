@@ -6,14 +6,14 @@ class SourceFile < Thor
   desc "fetch source files", "fetch source files from GitHub"
   def fetch
     self.destination_root = "vendor/assets"
-    remote = "https://github.com/harvesthq/chosen"
-    get "#{remote}/raw/master/chosen/chosen-sprite.png", "images/chosen-sprite.png"
-    get "#{remote}/raw/master/chosen/chosen.css", "stylesheets/chosen.css"
-    get "#{remote}/raw/master/coffee/lib/abstract-chosen.coffee", "javascripts/lib/abstract-chosen.coffee"
-    get "#{remote}/raw/master/coffee/lib/select-parser.coffee", "javascripts/lib/select-parser.coffee"
-    get "#{remote}/raw/master/coffee/chosen.jquery.coffee", "javascripts/chosen.jquery.coffee"
-    get "#{remote}/raw/master/coffee/chosen.proto.coffee", "javascripts/chosen.proto.coffee"
-    get "#{remote}/raw/master/VERSION", "VERSION"
+    remote = "https://github.com/rtlong/chosen"
+    get "#{remote}/raw/include-group-labels/chosen/chosen-sprite.png", "images/chosen-sprite.png"
+    get "#{remote}/raw/include-group-labels/chosen/chosen.css", "stylesheets/chosen.css"
+    get "#{remote}/raw/include-group-labels/coffee/lib/abstract-chosen.coffee", "javascripts/lib/abstract-chosen.coffee"
+    get "#{remote}/raw/include-group-labels/coffee/lib/select-parser.coffee", "javascripts/lib/select-parser.coffee"
+    get "#{remote}/raw/include-group-labels/coffee/chosen.jquery.coffee", "javascripts/chosen.jquery.coffee"
+    get "#{remote}/raw/include-group-labels/coffee/chosen.proto.coffee", "javascripts/chosen.proto.coffee"
+    get "#{remote}/raw/include-group-labels/VERSION", "VERSION"
     inside destination_root do
       version = File.read("VERSION").sub("\n", "")
       gsub_file "../../lib/chosen-rails/version.rb", /VERSION\s=\s"(\d|\.)+"$/ do |match|

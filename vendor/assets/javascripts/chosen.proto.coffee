@@ -7,7 +7,6 @@ root = this
 class Chosen extends AbstractChosen
 
   setup: ->
-    @current_value = @form_field.value
     @is_rtl = @form_field.hasClassName "chzn-rtl"
 
   finish_setup: ->
@@ -31,6 +30,8 @@ class Chosen extends AbstractChosen
       'id': @container_id
       'class': "chzn-container#{ if @is_rtl then ' chzn-rtl' else '' }"
       'style': 'width: ' + (@f_width) + 'px' #use parens around @f_width so coffeescript doesn't think + ' px' is a function parameter
+    
+    @default_text = if @form_field.readAttribute 'data-placeholder' then @form_field.readAttribute 'data-placeholder' else @default_text_default
     
     base_template = if @is_multiple then new Element('div', container_props).update( @multi_temp.evaluate({ "default": @default_text}) ) else new Element('div', container_props).update( @single_temp.evaluate({ "default":@default_text }) )
 
@@ -115,7 +116,7 @@ class Chosen extends AbstractChosen
         @pending_destroy_click = false
   
   container_mouseup: (evt) ->
-    this.results_reset(evt) if evt.target.nodeName is "ABBR" and not @is_disabled
+    this.results_reset(evt) if evt.target.nodeName is "ABBR"
 
   blur_test: (evt) ->
     this.close_field() if not @active_field and @container.hasClassName("chzn-container-active")
@@ -163,7 +164,7 @@ class Chosen extends AbstractChosen
       @search_choices.select("li.search-choice").invoke("remove")
       @choices = 0
     else if not @is_multiple
-      @selected_item.addClassName("chzn-default").down("span").update(@default_text)
+      @selected_item.down("span").update(@default_text)
       if @form_field.options.length <= @disable_search_threshold
         @container.addClassName "chzn-container-single-nosearch"
       else
@@ -178,7 +179,7 @@ class Chosen extends AbstractChosen
         if data.selected and @is_multiple
           this.choice_build data
         else if data.selected and not @is_multiple
-          @selected_item.removeClassName("chzn-default").down("span").update( data.html )
+          @selected_item.removeClassName("chzn-default").down("span").update this.choice_label(data)
           this.single_deselect_control_build() if @allow_single_deselect
 
     this.search_field_disabled()
@@ -223,12 +224,8 @@ class Chosen extends AbstractChosen
       @selected_item.addClassName('chzn-single-with-drop')
       if @result_single_selected
         this.result_do_highlight( @result_single_selected )
-    else if @max_selected_options <= @choices
-      @form_field.fire("liszt:maxselected", {chosen: this})
-      return false
 
     dd_top = if @is_multiple then @container.getHeight() else (@container.getHeight() - 1)
-    @form_field.fire("liszt:showing_dropdown", {chosen: this})
     @dropdown.setStyle {"top":  dd_top + "px", "left":0}
     @results_showing = true
 
@@ -240,7 +237,6 @@ class Chosen extends AbstractChosen
   results_hide: ->
     @selected_item.removeClassName('chzn-single-with-drop') unless @is_multiple
     this.result_clear_highlight()
-    @form_field.fire("liszt:hiding_dropdown", {chosen: this})
     @dropdown.setStyle({"left":"-9000px"})
     @results_showing = false
 
@@ -284,18 +280,22 @@ class Chosen extends AbstractChosen
       this.results_show()
 
   choice_build: (item) ->
-    if @is_multiple and @max_selected_options <= @choices
-      @form_field.fire("liszt:maxselected", {chosen: this})
-      return false
     choice_id = @container_id + "_c_" + item.array_index
     @choices += 1
     @search_container.insert
       before: @choice_temp.evaluate
         id:       choice_id
-        choice:   item.html
+        choice:   this.choice_label(item)
         position: item.array_index
     link = $(choice_id).down('a')
     link.observe "click", (evt) => this.choice_destroy_link_click(evt)
+
+  choice_label: (item) ->
+    if @include_group_label_in_selected
+      group_label = if item.group_label? then "<b class='group-name'>#{item.group_label}</b>" else ''
+      group_label + item.html
+    else
+      item.html
 
   choice_destroy_link_click: (evt) ->
     evt.preventDefault()
@@ -312,18 +312,14 @@ class Chosen extends AbstractChosen
     this.result_deselect link.readAttribute("rel")
     link.up('li').remove()
 
-  results_reset: ->
+  results_reset: (evt) ->
     @form_field.options[0].selected = true
     @selected_item.down("span").update(@default_text)
     @selected_item.addClassName("chzn-default") if not @is_multiple
     this.show_search_field_default()
-    this.results_reset_cleanup()
+    evt.target.remove()
     @form_field.simulate("change") if typeof Event.simulate is 'function'
     this.results_hide() if @active_field
-
-  results_reset_cleanup: ->
-    deselect_trigger = @selected_item.down("abbr")
-    deselect_trigger.remove() if(deselect_trigger)
   
   result_select: (evt) ->
     if @result_highlight
@@ -348,16 +344,14 @@ class Chosen extends AbstractChosen
       if @is_multiple
         this.choice_build item
       else
-        @selected_item.down("span").update(item.html)
+        @selected_item.down("span").update this.choice_label(item)
         this.single_deselect_control_build() if @allow_single_deselect
 
       this.results_hide() unless evt.metaKey and @is_multiple
 
       @search_field.value = ""
-      
-      @form_field.simulate("change") if typeof Event.simulate is 'function' && (@is_multiple || @form_field.value != @current_value)
-      @current_value = @form_field.value
-      
+
+      @form_field.simulate("change") if typeof Event.simulate is 'function'
       this.search_field_scale()
 
   result_activate: (el) ->
@@ -495,10 +489,7 @@ class Chosen extends AbstractChosen
       this.clear_backstroke()
     else
       @pending_backstroke = @search_container.siblings("li.search-choice").last()
-      if @single_backstroke_delete
-        @keydown_backstroke()
-      else
-        @pending_backstroke.addClassName("search-choice-focus")
+      @pending_backstroke.addClassName("search-choice-focus")
 
   clear_backstroke: ->
     @pending_backstroke.removeClassName("search-choice-focus") if @pending_backstroke
